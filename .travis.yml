@@ -1,9 +1,10 @@
+os: linux
 dist: xenial
 language: cpp
 compiler: clang
 install:
   # Install conan
-  - pip install conan
+  - pip install --user conan
   # Automatic detection of your arch, compiler, etc.
   - conan user
 script:
