@@ -11,6 +11,9 @@ endif ()
 
 project(range VERSION 0.0.$ENV{TRAVIS_BUILD_NUMBER} LANGUAGES CXX)
 
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()
+
 add_executable(range main.cpp)
 
 set(CPACK_GENERATOR DEB)
