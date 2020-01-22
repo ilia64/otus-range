@@ -52,6 +52,17 @@ int main()
 {
     try
     {
+        /*
+        auto pool = getlines(std::cin)
+        | view::filter([](std::string line){return !line.empty();})
+        | view::transform([](std::string line)
+            {
+                auto pos = std::find(line.begin(), line.end(), '\t');
+                return split(line.begin(), pos, '.');
+            })
+        | to_vector;
+        */
+
         Pool pool;
 
         for(std::string line; std::getline(std::cin, line);)
@@ -77,28 +88,23 @@ int main()
         // 1.29.168.152
         // 1.1.234.8
 
-        std::cout << std::endl;
         print_with_filter(pool, [](const Address& address) { return address[0] == 1; });
-        //std::cout << filter(rIndex, 1) << std::endl;
         // 1.231.69.33
         // 1.87.203.225
         // 1.70.44.170
         // 1.29.168.152
         // 1.1.234.8
 
-        std::cout << std::endl;
         print_with_filter(pool, [](const Address& address) { return address[0] == 46 && address[1] == 70; });
         // 46.70.225.39
         // 46.70.147.26
         // 46.70.113.73
         // 46.70.29.76
 
-        std::cout << std::endl;
         print_with_filter(pool, [](const Address& address)
         {
             return any_of(address, [](Octet octet) {return octet == 46;});
         });
-        //std::cout << filter<true>(rIndex, 46) << std::endl;
         // 186.204.34.46
         // 186.46.222.194
         // 185.46.87.231
