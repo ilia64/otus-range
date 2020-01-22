@@ -70,6 +70,15 @@ void print_any(const Pool& pool, Octet value)
     for_each(rng, [](const auto& address) { std::cout << address << '\n'; });
 }
 
+void print_first(const Pool& pool, Octet value)
+{
+    auto rng = pool
+            |   view::filter([value](const Address& address) { return address[0] == value; })
+            |   view::reverse
+            |   to_vector;
+    for_each(rng, [](const auto& address) { std::cout << address << '\n'; });
+}
+
 template <typename ...Args>
 PoolUnique filter(RIndex rIndex, Octet first, Args... args)
 {
@@ -131,7 +140,8 @@ int main()
         // 1.1.234.8
 
         std::cout << std::endl;
-        std::cout << filter(rIndex, 1) << std::endl;
+        print_first(pool, static_cast<Octet>(1));
+        //std::cout << filter(rIndex, 1) << std::endl;
         // 1.231.69.33
         // 1.87.203.225
         // 1.70.44.170
