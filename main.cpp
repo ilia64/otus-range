@@ -69,12 +69,6 @@ int main()
 
             auto pos = std::find(line.begin(), line.end(), '\t');
             Address address = split(line.begin(), pos, '.');
-
-            for (size_t i = 0; i < 4; i++)
-            {
-                Octet octet = address[i];
-            }
-
             pool.insert(address);
         }
 
