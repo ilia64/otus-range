@@ -5,7 +5,6 @@
 #include <string>
 #include <array>
 #include <set>
-#include <map>
 #include <vector>
 #include <range/v3/all.hpp>
 
@@ -15,7 +14,6 @@ using Octet = unsigned char;
 using Address = std::array<Octet, 4>;
 using Pool = std::multiset<Address>;
 using PoolUnique = std::set<Address>;
-using RIndex = std::map<Octet, PoolUnique>;
 
 auto octet_to_string = [](const Octet& octet) { return std::to_string(octet); };
 
@@ -61,7 +59,6 @@ int main()
     try
     {
         Pool pool;
-        RIndex rIndex;
 
         for(std::string line; std::getline(std::cin, line);)
         {
@@ -76,7 +73,6 @@ int main()
             for (size_t i = 0; i < 4; i++)
             {
                 Octet octet = address[i];
-                rIndex[octet].insert(address);
             }
 
             pool.insert(address);
