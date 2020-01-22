@@ -28,13 +28,13 @@ std::ostream& operator<< (std::ostream &out, const Address& address)
 
 std::ostream& operator<< (std::ostream &out, const Pool& pool)
 {
-    for_each(pool, [&out](const auto& address) { out << address << '\n'; });
+    for_each(pool | view::reverse, [&out](const auto& address) { out << address << '\n'; });
     return out;
 }
 
 std::ostream& operator<< (std::ostream &out, const PoolUnique& pool)
 {
-    for_each(pool, [&out](const auto& address) { out << address << '\n'; });
+    for_each(pool | view::reverse, [&out](const auto& address) { out << address << '\n'; });
     return out;
 }
 
@@ -57,17 +57,24 @@ Address split(Iter begin, Iter end, D delimiter)
     return address;
 }
 
-template <bool any = false, typename ...Args>
+void print_any(const Pool& pool, Octet value)
+{
+    auto rng =
+            pool
+            |   view::filter([value](const Address& address)
+                {
+                    return any_of(address, [value](Octet octet) {return octet == value;});
+                })
+            |   view::reverse
+            |   to_vector;
+    for_each(rng, [](const auto& address) { std::cout << address << '\n'; });
+}
+
+template <typename ...Args>
 PoolUnique filter(RIndex rIndex, Octet first, Args... args)
 {
     std::vector<Octet> target{first, static_cast<Octet>(args)...};
-
     PoolUnique pool = rIndex.at(target[0]);
-    if (any)
-    {
-        return pool;
-    }
-
     PoolUnique result;
 
     std::copy_if(pool.begin(), pool.end(),  std::inserter(result, result.end()), [&target](const Address& address)
@@ -123,6 +130,7 @@ int main()
         // 1.29.168.152
         // 1.1.234.8
 
+        std::cout << std::endl;
         std::cout << filter(rIndex, 1) << std::endl;
         // 1.231.69.33
         // 1.87.203.225
@@ -130,13 +138,16 @@ int main()
         // 1.29.168.152
         // 1.1.234.8
 
+        std::cout << std::endl;
         std::cout << filter(rIndex, 46, 70) << std::endl;
         // 46.70.225.39
         // 46.70.147.26
         // 46.70.113.73
         // 46.70.29.76
 
-        std::cout << filter<true>(rIndex, 46) << std::endl;
+        std::cout << std::endl;
+        print_any(pool, static_cast<Octet>(46));
+        //std::cout << filter<true>(rIndex, 46) << std::endl;
         // 186.204.34.46
         // 186.46.222.194
         // 185.46.87.231
