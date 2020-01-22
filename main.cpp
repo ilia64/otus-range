@@ -7,12 +7,17 @@
 #include <set>
 #include <map>
 #include <vector>
+#include <range/v3/all.hpp>
+
+using namespace ranges;
 
 using Octet = unsigned char;
 using Address = std::array<Octet, 4>;
 using Pool = std::multiset<Address>;
 using PoolUnique = std::set<Address>;
 using RIndex = std::map<Octet, PoolUnique>;
+
+auto octet_to_string = [](const Octet& octet) { return std::to_string(octet); };
 
 template <typename Iter, typename D>
 Address split(Iter begin, Iter end, D delimiter)
@@ -35,16 +40,8 @@ Address split(Iter begin, Iter end, D delimiter)
 
 std::ostream& operator<< (std::ostream &out, const Address& address)
 {
-    bool first = true;
-    for (const auto& octet : address)
-    {
-        if (!first)
-        {
-            out << '.';
-        }
-        out << static_cast<unsigned int>(octet);
-        first = false;
-    }
+    auto a = address | view::transform(octet_to_string) | view::intersperse(".");
+    for_each(a, [&out](const auto& str) { out << str; });
     return out;
 }
 
