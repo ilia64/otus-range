@@ -19,6 +19,25 @@ using RIndex = std::map<Octet, PoolUnique>;
 
 auto octet_to_string = [](const Octet& octet) { return std::to_string(octet); };
 
+std::ostream& operator<< (std::ostream &out, const Address& address)
+{
+    auto a = address | view::transform(octet_to_string) | view::intersperse(".");
+    for_each(a, [&out](const auto& str) { out << str; });
+    return out;
+}
+
+std::ostream& operator<< (std::ostream &out, const Pool& pool)
+{
+    for_each(pool, [&out](const auto& address) { out << address << '\n'; });
+    return out;
+}
+
+std::ostream& operator<< (std::ostream &out, const PoolUnique& pool)
+{
+    for_each(pool, [&out](const auto& address) { out << address << '\n'; });
+    return out;
+}
+
 template <typename Iter, typename D>
 Address split(Iter begin, Iter end, D delimiter)
 {
@@ -36,40 +55,6 @@ Address split(Iter begin, Iter end, D delimiter)
 
     assert(index == 4);
     return address;
-}
-
-std::ostream& operator<< (std::ostream &out, const Address& address)
-{
-    auto a = address | view::transform(octet_to_string) | view::intersperse(".");
-    for_each(a, [&out](const auto& str) { out << str; });
-    return out;
-}
-
-template <typename Container>
-void print(std::ostream &out, const Container& pool)
-{
-    bool first = true;
-    for (auto pos = pool.rbegin(); pos != pool.rend(); ++pos)
-    {
-        if (!first)
-        {
-            out << '\n';
-        }
-        out << *(pos);
-        first = false;
-    }
-}
-
-std::ostream& operator<< (std::ostream &out, const Pool& pool)
-{
-    print(out, pool);
-    return out;
-}
-
-std::ostream& operator<< (std::ostream &out, const PoolUnique& pool)
-{
-    print(out, pool);
-    return out;
 }
 
 template <bool any = false, typename ...Args>
