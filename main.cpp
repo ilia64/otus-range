@@ -26,18 +26,6 @@ std::ostream& operator<< (std::ostream &out, const Address& address)
     return out;
 }
 
-std::ostream& operator<< (std::ostream &out, const Pool& pool)
-{
-    for_each(pool | view::reverse, [&out](const auto& address) { out << address << '\n'; });
-    return out;
-}
-
-std::ostream& operator<< (std::ostream &out, const PoolUnique& pool)
-{
-    for_each(pool | view::reverse, [&out](const auto& address) { out << address << '\n'; });
-    return out;
-}
-
 template <typename Iter, typename D>
 Address split(Iter begin, Iter end, D delimiter)
 {
@@ -57,49 +45,15 @@ Address split(Iter begin, Iter end, D delimiter)
     return address;
 }
 
-void print_any(const Pool& pool, Octet value)
+template <typename T>
+void print (const T& pool)
 {
-    auto rng =
-            pool
-            |   view::filter([value](const Address& address)
-                {
-                    return any_of(address, [value](Octet octet) {return octet == value;});
-                })
-            |   view::reverse
-            |   to_vector;
-    for_each(rng, [](const auto& address) { std::cout << address << '\n'; });
+    for_each(pool | view::reverse, [](const auto& address) { std::cout << address << '\n'; });
 }
 
-void print_first(const Pool& pool, Octet value)
+void print_with_filter(const Pool& pool, std::function<bool(const Address& address)> handler)
 {
-    auto rng = pool
-            |   view::filter([value](const Address& address) { return address[0] == value; })
-            |   view::reverse
-            |   to_vector;
-    for_each(rng, [](const auto& address) { std::cout << address << '\n'; });
-}
-
-template <typename ...Args>
-PoolUnique filter(RIndex rIndex, Octet first, Args... args)
-{
-    std::vector<Octet> target{first, static_cast<Octet>(args)...};
-    PoolUnique pool = rIndex.at(target[0]);
-    PoolUnique result;
-
-    std::copy_if(pool.begin(), pool.end(),  std::inserter(result, result.end()), [&target](const Address& address)
-    {
-        size_t size = target.size();
-        for (size_t i = 0; i < size; ++i)
-        {
-            if(address[i] != target[i])
-            {
-                return false;
-            }
-        }
-        return true;
-    });
-
-    return result;
+    print (pool | view::filter(handler) | to_vector);
 }
 
 int main()
@@ -130,7 +84,7 @@ int main()
 
         //cat bin/ip_filter.tsv | bin/ip_filter
 
-        std::cout << pool << std::endl;
+        print(pool);
         // 222.173.235.246
         // 222.130.177.64
         // 222.82.198.61
@@ -140,7 +94,7 @@ int main()
         // 1.1.234.8
 
         std::cout << std::endl;
-        print_first(pool, static_cast<Octet>(1));
+        print_with_filter(pool, [](const Address& address) { return address[0] == 1; });
         //std::cout << filter(rIndex, 1) << std::endl;
         // 1.231.69.33
         // 1.87.203.225
@@ -149,14 +103,17 @@ int main()
         // 1.1.234.8
 
         std::cout << std::endl;
-        std::cout << filter(rIndex, 46, 70) << std::endl;
+        print_with_filter(pool, [](const Address& address) { return address[0] == 46 && address[1] == 70; });
         // 46.70.225.39
         // 46.70.147.26
         // 46.70.113.73
         // 46.70.29.76
 
         std::cout << std::endl;
-        print_any(pool, static_cast<Octet>(46));
+        print_with_filter(pool, [](const Address& address)
+        {
+            return any_of(address, [](Octet octet) {return octet == 46;});
+        });
         //std::cout << filter<true>(rIndex, 46) << std::endl;
         // 186.204.34.46
         // 186.46.222.194
@@ -197,16 +154,5 @@ int main()
     {
         std::cerr << e.what() << std::endl;
     }
-
     return 0;
 }
-
-/*#include <range/v3/all.hpp>
-#include <iostream>
-
-int main()
-{
-    const std::string s{"hello"};
-    ranges::for_each(s | ranges::view::filter([](auto c) { return c == 'l'; }), [](auto i) { std::cout << i << std::endl; });
-    return 0;
-}*/
