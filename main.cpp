@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <string>
 #include <array>
-#include <set>
 #include <vector>
 #include <range/v3/all.hpp>
 
@@ -12,8 +11,7 @@ using namespace ranges;
 
 using Octet = unsigned char;
 using Address = std::array<Octet, 4>;
-using Pool = std::multiset<Address>;
-using PoolUnique = std::set<Address>;
+using Pool = std::vector<Address>;
 
 auto octet_to_string = [](const Octet& octet) { return std::to_string(octet); };
 
@@ -23,6 +21,8 @@ std::ostream& operator<< (std::ostream &out, const Address& address)
     for_each(a, [&out](const auto& str) { out << str; });
     return out;
 }
+
+auto print_address = [](const Address& address) { std::cout << address << '\n'; };
 
 template <typename Iter, typename D>
 Address split(Iter begin, Iter end, D delimiter)
@@ -43,15 +43,9 @@ Address split(Iter begin, Iter end, D delimiter)
     return address;
 }
 
-template <typename T>
-void print (const T& pool)
-{
-    for_each(pool | view::reverse, [](const auto& address) { std::cout << address << '\n'; });
-}
-
 void print_with_filter(const Pool& pool, std::function<bool(const Address& address)> handler)
 {
-    print (pool | view::filter(handler) | to_vector);
+    for_each(pool | view::filter(handler), print_address);
 }
 
 int main()
@@ -68,13 +62,13 @@ int main()
             }
 
             auto pos = std::find(line.begin(), line.end(), '\t');
-            Address address = split(line.begin(), pos, '.');
-            pool.insert(address);
+            pool.emplace_back(split(line.begin(), pos, '.'));
         }
 
-        //cat bin/ip_filter.tsv | bin/ip_filter
+        sort(pool);
+        reverse(pool);
 
-        print(pool);
+        for_each(pool | view::unique, print_address);
         // 222.173.235.246
         // 222.130.177.64
         // 222.82.198.61
