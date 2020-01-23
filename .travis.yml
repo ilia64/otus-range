@@ -3,16 +3,14 @@ dist: xenial
 language: cpp
 compiler: clang
 install:
-  # Install conan
   - pip install --user conan
-  # Automatic detection of your arch, compiler, etc.
   - conan user
 script:
-  # Download dependencies and build project
   - conan install .
   - cmake .
   - cmake --build .
   - cmake --build . --target package
+  - ls
 deploy:
   provider: script
   skip_cleanup: true
