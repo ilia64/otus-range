@@ -79,7 +79,7 @@ int main()
         sort(pool);
         reverse(pool);
 
-        for_each(pool | view::unique, print_address);
+        for_each(pool, print_address);
         // 222.173.235.246
         // 222.130.177.64
         // 222.82.198.61
